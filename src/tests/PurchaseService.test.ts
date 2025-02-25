@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { PurchaseService } from "../services/PurchaseService";
 import { PurchaseRepository } from "../repositories/PurchaseRepository";
-import { IPurchase } from "../models/Purchase";
+import { IPurchase, IPurchaseCreate, PurchaseModel } from "../models/Purchase";
 import sinon from "sinon";
 
 describe("PurchaseService", () => {
@@ -10,21 +10,25 @@ describe("PurchaseService", () => {
 
   beforeEach(() => {
     purchaseRepoMock = sinon.createStubInstance(PurchaseRepository);
-    purchaseService = new PurchaseService(purchaseRepoMock as any);
+    purchaseService = new PurchaseService(purchaseRepoMock);
   });
 
   it("should add a valid purchase", async () => {
-    const purchase: IPurchase = {
+    const purchase: IPurchaseCreate = {
       userId: "123",
       description: "Coffee",
       amount: 10,
       date: new Date(),
     };
+    const purchaseMock = new PurchaseModel({
+      ...purchase,
+      _id: "mocked_id",
+    }) as IPurchase;
 
-    purchaseRepoMock.create.resolves(purchase);
+    purchaseRepoMock.create.resolves(purchaseMock);
 
     const result = await purchaseService.addPurchase(purchase);
-    expect(result).toEqual(purchase);
+    expect(result).toEqual(purchaseMock);
     expect(purchaseRepoMock.create.calledOnce).toBeTruthy();
   });
 
@@ -35,6 +39,8 @@ describe("PurchaseService", () => {
       amount: -10,
     };
 
-    await expect(purchaseService.addPurchase(purchase as IPurchase)).rejects.toThrow("Invalid purchase data");
+    await expect(purchaseService.addPurchase(purchase as IPurchase)).rejects.toThrow(
+      "Invalid purchase data",
+    );
   });
 });

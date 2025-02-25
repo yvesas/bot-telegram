@@ -1,14 +1,12 @@
 import { inject, injectable } from "inversify";
 import { PurchaseRepository } from "../repositories/PurchaseRepository";
-import { IPurchase } from "../models/Purchase";
+import { IPurchase, IPurchaseCreate } from "../models/Purchase";
 
 @injectable()
 export class PurchaseService {
-  constructor(
-    @inject(PurchaseRepository) private purchaseRepo: PurchaseRepository
-  ) {}
+  constructor(@inject(PurchaseRepository) private purchaseRepo: PurchaseRepository) {}
 
-  async addPurchase(purchase: IPurchase): Promise<IPurchase> {
+  async addPurchase(purchase: IPurchaseCreate): Promise<IPurchase> {
     if (!purchase.description || purchase.amount <= 0) {
       throw new Error("Invalid purchase data");
     }

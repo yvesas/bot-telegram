@@ -15,30 +15,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Setup pnpm
-      #   uses: pnpm/action-setup@v4
-
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          # cache: "pnpm"
+          # cache: "npm"
+          cache: "pnpm"
 
-      # - name: Install pnpm
-      #   run: npm install -g pnpm && pnpm --version
+      - name: Install pnpm
+        run: npm install -g pnpm && pnpm --version
 
       # - name: Setup corepack
       #   run: corepack enable && corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Run tests
-        run: npm test
+        run: pnpm test
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

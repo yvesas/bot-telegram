@@ -21,17 +21,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20"
           cache: "pnpm"
 
       - name: Install pnpm
         run: npm install -g pnpm
 
+      - name: Setup corepack
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
       - name: Install dependencies
         run: pnpm install
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm test -- --coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

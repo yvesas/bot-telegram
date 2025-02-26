@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { injectable } from "inversify";
 import { ProductModel, IProduct, IProductCreate } from "../models/Product";
 

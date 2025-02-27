@@ -17,6 +17,6 @@ export class PurchaseRepository {
     const end = new Date(year, month, 0);
 
     const purchases = await PurchaseModel.find({ userId, date: { $gte: start, $lt: end } });
-    return purchases.reduce((total, p) => total + p.amount, 0);
+    return purchases.reduce((total, p) => total + p.total, 0);
   }
 }

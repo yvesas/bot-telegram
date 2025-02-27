@@ -17,7 +17,7 @@ describe("PurchaseService", () => {
     const purchase: IPurchaseCreate = {
       userId: "123",
       description: "Coffee",
-      amount: 10,
+      total: 10,
       date: new Date(),
     };
     const purchaseMock = new PurchaseModel({
@@ -36,7 +36,7 @@ describe("PurchaseService", () => {
     const purchase: Partial<IPurchase> = {
       userId: "123",
       description: "",
-      amount: -10,
+      total: -10,
     };
 
     await expect(purchaseService.addPurchase(purchase as IPurchase)).rejects.toThrow(

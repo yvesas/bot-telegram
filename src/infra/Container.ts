@@ -4,7 +4,7 @@ import { PurchaseRepository } from "../repositories/PurchaseRepository";
 import { ProductRepository } from "../repositories/ProductRepository";
 import { PurchaseService } from "../services/PurchaseService";
 import { ProductService } from "../services/ProductService";
-import { TelegramBot } from "../services/telegramBot";
+import { TelegramBot } from "../services/TelegramBot";
 
 const container = new Container();
 container.bind<Database>(Database).toSelf();

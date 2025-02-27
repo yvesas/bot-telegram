@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { container } from "./infra/Container";
 import { Database } from "./infra/Database";
-import { TelegramBot } from "./services/telegramBot";
+import { TelegramBot } from "./services/TelegramBot";
 
 async function main() {
   // Conectar ao banco de dados

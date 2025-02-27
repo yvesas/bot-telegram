@@ -1,8 +1,6 @@
-import { Readable } from "stream";
 import { Telegraf, Context } from "telegraf";
 import type { Message } from "telegraf/types";
 import { OcrService } from "./OcrService";
-import { Buffer } from "buffer";
 
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -30,12 +28,11 @@ export class TelegramBot {
   }
 
   private handleStart(ctx: Context) {
-    ctx.reply("Olá! Eu sou o seu bot.");
+    ctx.reply("Olá! Envie uma foto de um cupom fiscal para fazer OCR!");
   }
 
   private async handleText(ctx: Context) {
     const message = ctx.message as Message.TextMessage;
-
     if (message?.text) {
       await ctx.reply(`Você disse: ${message.text}`);
     }
@@ -49,17 +46,21 @@ export class TelegramBot {
       return;
     }
 
-    const fileId = message.photo[0].file_id;
-
+    const fileId = message.photo[message.photo.length - 1].file_id; // Pega a imagem de melhor resolução
     const file = await ctx.telegram.getFile(fileId);
     const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
 
-    const response = await fetch(fileUrl);
+    try {
+      const response = await fetch(fileUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const base64Image = Buffer.from(arrayBuffer).toString("base64");
 
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
-    const text = await this.ocrService.extractTextFromImage(imageBuffer);
-
-    await ctx.reply(`Texto extraído: ${text}`);
+      const text = await this.ocrService.extractTextFromImage(base64Image);
+      await ctx.reply(`Texto extraído: ${text}`);
+    } catch (error) {
+      console.error("Erro ao baixar/processar a imagem:", error);
+      await ctx.reply("Houve um erro ao processar a imagem. Tente novamente.");
+    }
   }
 
   private isPhotoMessage(message: Message | undefined): message is Message.PhotoMessage {

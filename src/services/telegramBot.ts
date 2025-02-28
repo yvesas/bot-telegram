@@ -2,6 +2,7 @@ import { Telegraf, Context } from "telegraf";
 import type { Message } from "telegraf/types";
 import { container } from "../infra/Container";
 import { PurchaseService } from "./PurchaseService";
+import { MessageProcessingService } from "./MessageProcessingService";
 
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -11,10 +12,12 @@ if (!token) {
 export class TelegramBot {
   private bot: Telegraf;
   private purchaseService: PurchaseService;
+  private messageProcessingService: MessageProcessingService;
 
   constructor() {
     this.bot = new Telegraf(token || "");
     this.purchaseService = container.get(PurchaseService);
+    this.messageProcessingService = container.get(MessageProcessingService);
 
     this.setUpBot();
   }
@@ -23,7 +26,9 @@ export class TelegramBot {
       ctx.reply("Olá! Envie um cupom fiscal ou use /compras para ver seus gastos."),
     );
     this.bot.command("compras", (ctx) => this.handleGetPurchases(ctx));
-    // this.bot.on("text", (ctx: Context) => this.handleText(ctx));
+    this.bot.command("ia", (ctx) => this.handleSetIAModel(ctx));
+
+    this.bot.on("text", (ctx: Context) => this.handleText(ctx));
     this.bot.on("photo", (ctx: Context) => this.handlePhoto(ctx));
     this.bot.launch().then(() => console.log("🚀 Bot was launched!"));
   }
@@ -33,6 +38,38 @@ export class TelegramBot {
     if (message?.text) {
       await ctx.reply(`Você disse: ${message.text}`);
     }
+
+    const userId = String(ctx.message?.from.id);
+    const response = await this.messageProcessingService.processMessage(userId, message.text);
+
+    // if (response.intent === "purchase" && response.item && response.price) {
+    //   const purchase = await this.purchaseService.addPurchase(
+    //     userId,
+    //     response.item,
+    //     response.price,
+    //   )
+    //   await ctx.reply(
+    //     `🛒 Compra registrada: ${purchase.description} - Total de R$ ${purchase.total.toFixed(2)}`,
+    //   );
+    // } else {
+    //   await ctx.reply(
+    //     "❌ Não consegui identificar os dados corretamente. Tente uma imagem mais nítida.",
+    //   );
+    // }
+
+    await ctx.reply(response);
+  }
+
+  private async handleSetIAModel(ctx: Context) {
+    const userId = String(ctx.message?.from.id);
+    const model = (ctx.message as Message.TextMessage)?.text.split(" ")[1]?.toLowerCase();
+
+    if (!model) {
+      return ctx.reply("Use: /ia gpt ou /ia gemini");
+    }
+
+    const response = this.messageProcessingService.setUserModel(userId, model);
+    ctx.reply(response);
   }
 
   private async handleGetPurchases(ctx: Context) {

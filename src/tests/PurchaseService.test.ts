@@ -1,16 +1,19 @@
 import "reflect-metadata";
 import { PurchaseService } from "../services/PurchaseService";
+import { OcrService } from "../services/OcrService";
 import { PurchaseRepository } from "../repositories/PurchaseRepository";
 import { IPurchase, IPurchaseCreate, PurchaseModel } from "../models/Purchase";
 import sinon from "sinon";
 
 describe("PurchaseService", () => {
   let purchaseRepoMock: sinon.SinonStubbedInstance<PurchaseRepository>;
+  let ocrServiceMock: sinon.SinonStubbedInstance<OcrService>;
   let purchaseService: PurchaseService;
 
   beforeEach(() => {
     purchaseRepoMock = sinon.createStubInstance(PurchaseRepository);
-    purchaseService = new PurchaseService(purchaseRepoMock);
+    ocrServiceMock = sinon.createStubInstance(OcrService);
+    purchaseService = new PurchaseService(purchaseRepoMock, ocrServiceMock);
   });
 
   it("should add a valid purchase", async () => {
@@ -19,6 +22,7 @@ describe("PurchaseService", () => {
       description: "Coffee",
       total: 10,
       date: new Date(),
+      items: [],
     };
     const purchaseMock = new PurchaseModel({
       ...purchase,
@@ -37,6 +41,7 @@ describe("PurchaseService", () => {
       userId: "123",
       description: "",
       total: -10,
+      items: [],
     };
 
     await expect(purchaseService.addPurchase(purchase as IPurchase)).rejects.toThrow(

@@ -1,24 +1,10 @@
 import { inject, injectable } from "inversify";
 import { PurchaseRepository } from "../repositories/PurchaseRepository";
 import { IPurchase, IPurchaseCreate } from "../models/Purchase";
-import { OcrService } from "./OcrService";
 
 @injectable()
 export class PurchaseService {
-  constructor(
-    @inject(PurchaseRepository) private purchaseRepo: PurchaseRepository,
-    @inject(OcrService) private ocrService: OcrService,
-  ) {}
-
-  // async addPurchaseFromImage(userId: string, base64Image: string): Promise<IPurchase | null> {
-  //   const ocrText = await this.ocrService.extractTextFromImage(base64Image);
-  //   const purchaseData = this.ocrService.parseReceiptText(ocrText);
-  //   purchaseData.userId = userId;
-  //   if (!purchaseData.total) {
-  //     throw new Error("Não foi possível identificar os dados da compra.");
-  //   }
-  //   return await this.purchaseRepo.create(purchaseData as IPurchaseCreate);
-  // }
+  constructor(@inject(PurchaseRepository) private purchaseRepo: PurchaseRepository) {}
 
   async addPurchase(purchase: IPurchaseCreate): Promise<IPurchase> {
     if (purchase.total <= 0) {

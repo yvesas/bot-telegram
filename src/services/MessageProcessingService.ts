@@ -1,9 +1,14 @@
 import { injectable } from "inversify";
 import { GptProcessor } from "./GptProcessor";
 import { GeminiProcessor } from "./GeminiProcessor";
+import { IPurchaseBase } from "../models/Purchase";
 
+export interface ModelResponse extends IPurchaseBase {
+  intent: "purchase" | "query" | "other" | "unknown";
+  message?: string;
+}
 export interface IMessageProcessor {
-  processMessage(message: string): Promise<string>;
+  processMessage(message: string): Promise<ModelResponse>;
 }
 
 @injectable()
@@ -31,7 +36,6 @@ export class MessageProcessingService {
   async processMessage(userId: string, text: string) {
     const processor = this.getProcessor(userId);
     const response = await processor.processMessage(text);
-    console.log("[processMessage] userId:", userId, " -> text: ", text, " - response: ", response);
 
     return response || `🤖 Não entendi. Pode reformular?`;
   }

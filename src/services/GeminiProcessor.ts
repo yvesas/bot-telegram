@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { VertexAI } from "@google-cloud/vertexai";
-import { IMessageProcessor } from "./MessageProcessingService";
+import { IMessageProcessor, ModelResponse } from "./MessageProcessingService";
+import { getPrompt001 } from "../IA/prompts";
 
 export class GeminiProcessor implements IMessageProcessor {
   private vertexAI: VertexAI;
@@ -20,13 +21,26 @@ export class GeminiProcessor implements IMessageProcessor {
     });
   }
 
-  async processMessage(message: string) {
-    const prompt = `Extract item, quantity, price, and description from this message: "${message}"`;
+  async processMessage(message: string): Promise<ModelResponse> {
+    try {
+      const prompt = getPrompt001(null, message);
 
-    const result = await this.model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.candidates[0].content.parts[0].text;
-
-    return text;
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.candidates[0].content.parts[0].text;
+      text = text.replace(/```(json)?/g, "");
+      return JSON.parse(text) as ModelResponse;
+    } catch (error) {
+      console.error("Erro ao processar mensagem:", error);
+      return {
+        intent: "unknown",
+        message: "Erro ao processar a mensagem.",
+        userId: "",
+        description: "",
+        total: 0,
+        date: new Date(),
+        items: [],
+      } as ModelResponse;
+    }
   }
 }

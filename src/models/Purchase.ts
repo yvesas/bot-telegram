@@ -45,7 +45,6 @@ export interface IPurchaseBase {
   store?: IStoreInfo;
   tax?: ITaxInfo;
   items: IPurchaseItem[];
-  receiptImage?: string;
 }
 
 export type IPurchaseCreate = Omit<IPurchaseBase, "_id">;
@@ -60,7 +59,6 @@ const PurchaseSchema = new Schema<IPurchase>(
     tax: { type: TaxInfoSchema },
     store: { type: [StoreSchema] },
     items: { type: [PurchaseItemSchema] },
-    receiptImage: { type: String },
   },
   {
     timestamps: true,

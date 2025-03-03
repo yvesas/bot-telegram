@@ -6,7 +6,7 @@ import tsparser from "@typescript-eslint/parser";
 /** @type {import("eslint").Linter.FlatConfig[]} */
 export default [
   {
-    files: ["**/*.ts"],
+    files: ["src/**/*.ts"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {

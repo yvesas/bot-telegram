@@ -7,13 +7,11 @@ import sinon from "sinon";
 
 describe("PurchaseService", () => {
   let purchaseRepoMock: sinon.SinonStubbedInstance<PurchaseRepository>;
-  let ocrServiceMock: sinon.SinonStubbedInstance<OcrService>;
   let purchaseService: PurchaseService;
 
   beforeEach(() => {
     purchaseRepoMock = sinon.createStubInstance(PurchaseRepository);
-    ocrServiceMock = sinon.createStubInstance(OcrService);
-    purchaseService = new PurchaseService(purchaseRepoMock, ocrServiceMock);
+    purchaseService = new PurchaseService(purchaseRepoMock);
   });
 
   it("should add a valid purchase", async () => {

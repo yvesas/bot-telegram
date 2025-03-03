@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import { PurchaseService } from "../services/PurchaseService";
-import { OcrService } from "../services/OcrService";
 import { PurchaseRepository } from "../repositories/PurchaseRepository";
 import { IPurchase, IPurchaseCreate, PurchaseModel } from "../models/Purchase";
 import sinon from "sinon";

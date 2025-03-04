@@ -7,6 +7,7 @@ import tsparser from "@typescript-eslint/parser";
 export default [
   {
     files: ["src/**/*.ts"],
+    ignores: ["node_modules/**", "dist/**"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -23,7 +24,6 @@ export default [
       ...eslintConfigPrettier.rules,
       "prettier/prettier": "error",
       "no-console": "warn",
-      // "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },

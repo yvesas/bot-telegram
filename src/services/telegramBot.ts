@@ -4,6 +4,7 @@ import { container } from "../infra/Container";
 import { PurchaseService } from "./PurchaseService";
 import { OcrService } from "./OcrService";
 import { MessageProcessingService } from "./MessageProcessingService";
+import { convertModelResponseToPurchase } from "../infra/converters/purchaseConverter";
 
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -33,41 +34,33 @@ export class TelegramBot {
 
     this.bot.on("text", (ctx: Context) => this.handleText(ctx));
     this.bot.on("photo", (ctx: Context) => this.handlePhoto(ctx));
-    this.bot.launch().then(() => console.log("🚀 Bot was launched!"));
+    this.bot.launch().then(() => console.info("🚀 Bot was launched!"));
   }
 
   private async handleText(ctx: Context) {
     const message = ctx.message as Message.TextMessage;
-    // if (message?.text) {
-    //   await ctx.reply(`Você disse: ${message.text}`);
-    // }
-
     const userId = String(ctx.message?.from.id);
     const messageProcessed = await this.messageProcessingService.processMessage(
       userId,
       message.text,
     );
     console.log(">> messageProcessed by text: ", messageProcessed);
-    const purchase = messageProcessed;
 
-    // if (response.intent === "purchase" && response.item && response.price) {
-    //   const purchase = await this.purchaseService.addPurchase(
-    //     userId,
-    //     response.item,
-    //     response.price,
-    //   )
-    // }
-
-    if (purchase.message) {
+    if (messageProcessed.message) {
+      await ctx.reply(`❌ ${messageProcessed.message}`);
       await ctx.reply(
         "❌ Não consegui identificar os dados corretamente. Pode repetir por favor com mais detalhes.",
       );
       return;
     }
 
-    await ctx.reply(
-      `🛒 Compra registrada: ${purchase.description} - Total de R$ ${purchase.total.toFixed(2)}`,
-    );
+    const purchaseData = convertModelResponseToPurchase(messageProcessed);
+    if (purchaseData) {
+      await this.purchaseService.addPurchase(purchaseData);
+      await ctx.reply(
+        `🛒 Compra registrada: ${purchaseData.description} - Total de R$ ${purchaseData.total.toFixed(2)}`,
+      );
+    }
   }
 
   private async handleSetIAModel(ctx: Context) {
@@ -119,24 +112,23 @@ export class TelegramBot {
 
       const ocrText = await this.ocrService.extractTextFromImage(base64Image);
       const messageProcessed = await this.messageProcessingService.processMessage(userId, ocrText);
-      console.log(">> messageProcessed by image: ", messageProcessed);
-      const purchase = messageProcessed;
-      //  await this.purchaseService.addPurchase({
-      //   userId,
-      //   description: messageProcessed.item,
-      //   total: messageProcessed.price,
-      // });
+      console.log(">> messageProcessed by photo: ", messageProcessed);
 
-      if (purchase.message) {
+      if (messageProcessed.message) {
+        await ctx.reply(`❌ ${messageProcessed.message}`);
         await ctx.reply(
-          "❌ Não consegui identificar os dados corretamente. Tente uma imagem mais nítida.",
+          "❌ Não consegui identificar os dados corretamente. Tente uma imagem mais nítida",
         );
         return;
       }
 
-      await ctx.reply(
-        `🛒 Compra registrada: ${purchase.description} - Total de R$ ${purchase.total.toFixed(2)}`,
-      );
+      const purchaseData = convertModelResponseToPurchase(messageProcessed);
+      if (purchaseData) {
+        await this.purchaseService.addPurchase(purchaseData);
+        await ctx.reply(
+          `🛒 Compra registrada: ${purchaseData.description} - Total de R$ ${purchaseData.total.toFixed(2)}`,
+        );
+      }
     } catch (error) {
       console.error("Erro ao baixar/processar a imagem:", error);
       await ctx.reply("Houve um erro ao processar a imagem. Tente novamente.");

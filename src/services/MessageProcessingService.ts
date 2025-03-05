@@ -8,7 +8,7 @@ export interface ModelResponse extends IPurchaseBase {
   message?: string;
 }
 export interface IMessageProcessor {
-  processMessage(message: string): Promise<ModelResponse>;
+  processMessage(message: string): Promise<ModelResponse | null>;
 }
 
 @injectable()
@@ -34,9 +34,14 @@ export class MessageProcessingService {
   }
 
   async processMessage(userId: string, text: string) {
-    const processor = this.getProcessor(userId);
-    const response = await processor.processMessage(text);
+    try {
+      const processor = this.getProcessor(userId);
+      const response = await processor.processMessage(text);
 
-    return response || `🤖 Não entendi. Pode reformular?`;
+      return response || `🤖 Não entendi. Pode reformular?`;
+    } catch (error) {
+      // console.log(error);
+      return "🤖 Erro ao processar a mensagem.";
+    }
   }
 }
